@@ -1,0 +1,86 @@
+name: Build and deploy Python project to GitHub release - nephroapi
+'on':
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+env:
+  PYTHON_VERSION: '3.10'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Setup Python version
+        uses: actions/setup-python@v1
+        with:
+          python-version: '${{ env.PYTHON_VERSION }}'
+      - name: Create and start virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v2
+        with:
+          name: python-app
+          path: |
+            . 
+            !venv/
+  Release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: python-app
+          path: |
+            .
+      - name: Archive the application
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: nephroapi.zip
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: '${{ secrets.RELEASE_TOKEN }}'
+        with:
+          tag_name: 'v${{ github.run_number }}'
+          release_name: 'Nephro API v${{ github.run_number }}'
+          body: |
+            Instructions to follow:
+            
+            ## To open a pull request:
+            1. Fork the current repository: nephroai
+            2. Clone the repository.
+            3. Make your changes to the codebase.
+            4. Commit your changes and push.
+            5. Open a pull request from your forked repository to the original repository.
+            6. Provide a detailed description of the changes you've made in the pull request.
+            
+            ## To close a pull request
+            1. Check if the pull request is still up-to-date.
+            2. Merge the changes from the current repository.
+            3. Resolve, commit, and push the updated changes.
+            4. Comment on the pull request with changes you have made.
+
+            Testing purpose only! Please refrain publishing the API to Azure Functions without a proper supervision.
+            This may cause the server to crash because the required ML models were not attached.
+            
+            Additional Note: Open a new issue with a detailed description with the Log, in case if any error occurred.
+            Additional feature request is always welcome.
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: '${{ secrets.RELEASE_TOKEN }}'
+        with:
+          upload_url: '${{ steps.create_release.outputs.upload_url }}'
+          asset_path: ./nephroapi.zip
+          asset_name: 'nephroapi-v${{ github.run_number }}.zip'
+          asset_content_type: application/zip
