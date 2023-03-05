@@ -69,7 +69,7 @@ jobs:
             4. Comment on the pull request with changes you have made.
 
             Testing purpose only! Please refrain publishing the API to Azure Functions without a proper supervision.
-            This may cause the server to crash.
+            This may cause the server to crash because the required ML models were not attached.
             
             Additional Note: Open a new issue with a detailed description with the Log, in case if any error occurred.
             Additional feature request is always welcome.
@@ -82,5 +82,5 @@ jobs:
         with:
           upload_url: '${{ steps.create_release.outputs.upload_url }}'
           asset_path: ./nephroapi.zip
-          asset_name: 'nephroapi-vS{{ github.run_number }}.zip'
+          asset_name: 'nephroapi-v${{ github.run_number }}.zip'
           asset_content_type: application/zip
