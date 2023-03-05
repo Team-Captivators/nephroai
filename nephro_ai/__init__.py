@@ -50,7 +50,8 @@ def get_image_type_from_base64(base64_string):
 
 # Decode and convert the image in to np array
 def base64_to_array(base64_string: str,
-                    image_size: tuple
+                    image_size: tuple,
+                    class_base: int, 
                     ) -> np.ndarray:
     try:
         logging.info('Decoding the image from base64 to numpy.')
@@ -61,7 +62,10 @@ def base64_to_array(base64_string: str,
             img = load_img(BytesIO(decoded_base64), target_size=image_size)
             
             # Convert the image to a numpy array
-            img = img_to_array(img) / 255.0
+            if class_base == 1:
+                img = img_to_array(img) / 255.0
+            else:
+                img = img_to_array(img)
 
             # Reshape the image to add a batch dimension
             img = np.expand_dims(img, axis=0)
@@ -177,12 +181,12 @@ def main(request: func.HttpRequest) -> func.HttpResponse:
                 
                 if file_type in ["jpeg", "jpg", "png"]:
                     
-                    img_1 = base64_to_array(img, (224, 224))
+                    img_1 = base64_to_array(img, (224, 224), 0)
                     
                     # Find the ct type
                     logging.info('Validating CT image type.')
                     
-                    img_2 = base64_to_array(img, (64, 64))
+                    img_2 = base64_to_array(img, (64, 64), 1)
                     ct_type = verify(img_2)
                     
                     if ct_type == 'CT':
