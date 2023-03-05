@@ -62,7 +62,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               per_page: 1,
-              tag_name: 'v${{ steps.get_latest_release_version.outputs.version + 1 }}'
+              tag_name: 'v$((steps.get_latest_release_version.outputs.version + 1))'
             });
             return { exists: data.length > 0 }
         env:
@@ -75,8 +75,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
-          tag_name: v${{ steps.get_latest_release_version.outputs.version + 1 }}
-          release_name: Release v${{ steps.get_latest_release_version.outputs.version + 1 }}
+          tag_name: v$((steps.get_latest_release_version.outputs.version + 1))
+          release_name: Release v$((steps.get_latest_release_version.outputs.version + 1))
           body: |
             Release notes go here
             
