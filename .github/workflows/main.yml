@@ -45,7 +45,11 @@ jobs:
               repo: context.repo.repo,
               per_page: 1
             });
-            return { version: data[0].tag_name.replace('v', ''), notes: data[0].body }
+            if (data.length > 0) {
+              return { version: data[0].tag_name.replace('v', ''), notes: data[0].body }
+            } else {
+              return { version: '0.0.0', notes: '' }
+            }
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
