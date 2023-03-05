@@ -47,8 +47,9 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: python-app
-          path: .
-		  
+          path: |
+            .
+          
       - name: Archive the application
         uses: thedoctor0/zip-release@master
         with:
@@ -66,12 +67,9 @@ jobs:
             Release notes:
             
             ## Release v${{ github.run_number }}
-			      ## Testing purpose only!
-			
-			      Report any bug on this release. 
-
-					draft: false
-          prerelease: false
+            ## Testing purpose only!
+            
+            Report any bug on this release.
 
       - name: Upload Release Asset
         id: upload-release-asset
