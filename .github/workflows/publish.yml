@@ -53,7 +53,7 @@ jobs:
       - name: Archive the application
         uses: thedoctor0/zip-release@master
         with:
-          filename: nephroapi.zip
+         filename: nephroapi.zip
 	  
       - name: Create Release
         id: create_release
