@@ -50,14 +50,30 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.RELEASE_TOKEN }}'
         with:
           tag_name: 'v${{ github.run_number }}'
-          release_name: 'Release v${{ github.run_number }}'
+          release_name: 'Nephro API v${{ github.run_number }}'
           body: |
-            Release notes:
+            Instructions to follow:
+            
+            ## To open a pull request:
+            1. Fork the current repository: nephroai
+            2. Clone the repository.
+            3. Make your changes to the codebase.
+            4. Commit your changes and push.
+            5. Open a pull request from your forked repository to the original repository.
+            6. Provide a detailed description of the changes you've made in the pull request.
+            
+            ## To close a pull request
+            1. Check if the pull request is still up-to-date.
+            2. Merge the changes from the current repository.
+            3. Resolve, commit, and push the updated changes.
+            4. Comment on the pull request with changes you have made.
 
-            ## Release v${{ github.run_number }}
-            ## Testing purpose only!
+            Testing purpose only! Please refrain publishing the API to Azure Functions without a proper supervision.
+            This may cause the server to crash.
+            
+            Additional Note: Open a new issue with a detailed description with the Log, in case if any error occurred.
+            Additional feature request is always welcome.
 
-            Report any bug on this release.
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
