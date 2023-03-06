@@ -56,7 +56,6 @@ def base64_to_array(base64_string: str,
     try:
         logging.info('Decoding the image from base64 to numpy.')
         decoded_base64 = base64.b64decode(base64_string)
-        
         try:
             logging.info(f'Resizing the image to size {image_size}.')
             img = load_img(BytesIO(decoded_base64), target_size=image_size)
@@ -69,7 +68,6 @@ def base64_to_array(base64_string: str,
 
             # Reshape the image to add a batch dimension
             img = np.expand_dims(img, axis=0)
-            
             logging.info('Resizing has been completed.')
             return img
         
@@ -97,8 +95,7 @@ def verify(img):
 
         final_prediction = st.mode(normalised_result, keepdims=False).mode[0]
         result = classify(final_prediction)
-        
-        return result
+        return result 
     
     except:
         return "Invalid file type found!"
@@ -120,40 +117,47 @@ def predict(img):
         logging.info('Starting the prediction process.')
         
         predictions = []
+        mod_img = img / 255.0
         for i, model in enumerate(models[3:]):
             
             logging.info(f'Sending the image to model - {i + 1}')
-            prediction = model.predict(img, verbose=0)
+            if i < 3:
+                prediction = model.predict(img, verbose=0)
+            else:
+                prediction = model.predict(mod_img, verbose=0)
             predictions.append(prediction)
 
         # Normalise predictions
         logging.info('Normalising the predicted classes')
         
-        npx_prediction = []
-        for prediction in predictions:
-            npx_prediction.append(np.argmax(prediction, axis=1))
+        # Classify the tumor predictions
+        tumor_predictions = predictions[:3]
+        tumor_prediction_classes = [np.argmax(prediction, axis=1)[0] 
+                                    for prediction in tumor_predictions]
+        tumor_mode = st.mode(tumor_prediction_classes, keepdims=False)[0]
+        tumor_result = prediction_class(tumor_mode, 1)
+        tumor_score = str(round(max([max(prediction[0]) 
+                                     for prediction in tumor_predictions]) * 100, 2)) + '%'
 
-        logging.info('Classifying the class models')
-        npx_tumor = st.mode(npx_prediction[:3], keepdims=False)
-        npx_stone = st.mode(npx_prediction[3:6], keepdims=False)
-        npx_cyst = st.mode(npx_prediction[6:], keepdims=False)
+        # Classify the stone predictions
+        stone_predictions = predictions[3:6]
+        stone_prediction_classes = [np.argmax(prediction, axis=1)[0] 
+                                    for prediction in stone_predictions]
+        stone_mode = st.mode(stone_prediction_classes, keepdims=False)[0]
+        stone_result = prediction_class(stone_mode, 2)
+        stone_score = str(round(max([max(prediction[0]) 
+                                     for prediction in stone_predictions]) * 100, 2)) + '%'
 
-        # Classify the final predictions
-        result_1 = prediction_class(npx_tumor.mode[0], 1)
-        result_2 = prediction_class(npx_stone.mode[0], 2)
-        result_3 = prediction_class(npx_cyst.mode[0], 3)
+        # Classify the cyst predictions
+        cyst_predictions = predictions[6:]
+        cyst_prediction_classes = [np.argmax(prediction, axis=1)[0] 
+                                   for prediction in cyst_predictions]
+        cyst_mode = st.mode(cyst_prediction_classes, keepdims=False)[0]
+        cyst_result = prediction_class(cyst_mode, 3)
+        cyst_score = str(round(max([max(prediction[0]) 
+                                    for prediction in cyst_predictions]) * 100, 2)) + '%'
 
-        # Calculate the confidence score
-        logging.info('Calculating the confidence score.')
-        npx_tm = sum([round(max(score[0]) * 100, 2) for score in predictions[:3]])
-        npx_st = sum([round(max(score[0]) * 100, 2) for score in predictions[3:6]])
-        npx_cy = sum([round(max(score[0]) * 100, 2) for score in predictions[6:]])
-
-        score_1 = str(round(npx_tm / 3, 2)) + '%'
-        score_2 = str(round(npx_st / 3, 2)) + '%'
-        score_3 = str(round(npx_cy / 3, 2)) + '%'
-
-        return [result_1, result_2, result_3, score_1, score_2, score_3]
+        return [tumor_result, stone_result, cyst_result, tumor_score, stone_score, cyst_score]
     
     except RuntimeError as re:
         raise RuntimeError(re)
