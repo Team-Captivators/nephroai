@@ -69,7 +69,12 @@ def base64_to_array(base64_string: str,
             # Reshape the image to add a batch dimension
             img = np.expand_dims(img, axis=0)
             logging.info('Resizing has been completed.')
-            return img
+
+            # Check image size
+            if len(img) > 25 * 1024 * 1024:
+                raise UnicodeDecodeError("Poor image size")
+            else:
+                return img
         
         except:
             raise UnicodeDecodeError("Poor image quality!")
