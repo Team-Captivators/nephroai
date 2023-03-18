@@ -88,8 +88,9 @@ def decode_base64(base64_string: str
     try:
         logging.info('Decoding the image from base64 to numpy.')
         decoded_base64 = base64.b64decode(base64_string)
+
         return decoded_base64
-    
+
     except Exception:
         raise Base64DecodeError("Invalid image found!")
 
@@ -99,10 +100,8 @@ def verify(
     encoded_base64: str
     ) -> str:
 
-            # Reshape the image to add a batch dimension
-            img = np.expand_dims(img, axis=0)
-            logging.info('Resizing has been completed.')
-            return img
+    # Load image buffer
+    image_bytes = BytesIO(decoded_base64)
         
     # Check the base64 length
     logging.info('Checking image size.')
