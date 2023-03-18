@@ -99,8 +99,10 @@ def verify(
     encoded_base64: str
     ) -> str:
 
-    # Load image buffer
-    image_bytes = BytesIO(decoded_base64)
+            # Reshape the image to add a batch dimension
+            img = np.expand_dims(img, axis=0)
+            logging.info('Resizing has been completed.')
+            return img
         
     # Check the base64 length
     logging.info('Checking image size.')
