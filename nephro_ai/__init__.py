@@ -88,7 +88,6 @@ def decode_base64(base64_string: str
     try:
         logging.info('Decoding the image from base64 to numpy.')
         decoded_base64 = base64.b64decode(base64_string)
-
         return decoded_base64
 
     except Exception:
@@ -116,7 +115,7 @@ def verify(
     size_mb = size_bytes * 1e-6
     
     # Validate the file size
-    if size_mb > 25.0: # Should not exceed 25MB
+    if size_mb > 5.0: # Should not exceed 5MB
         raise InvalidFileTypeError("Image size exceeded the limit!")
     
     elif size_mb < 0.080: # Should not less than 80KB
@@ -135,11 +134,8 @@ def verify(
     # turn the image into a numpy array
     image_array = np.asarray(image)
 
-    # Normalize the image
-    normalized_image_array = (image_array.astype(np.float32) / 127.5) - 1
-
-    # Load the image into the array
-    data[0] = normalized_image_array
+    # Normalize and load the image into the array
+    data[0] = (image_array.astype(np.float32) / 127.5) - 1
 
     # Predicts the model
     logging.info('Validating CT image class.')
@@ -172,7 +168,13 @@ def image_preprocessor(
     img = np.expand_dims(img, axis=0)
 
     # Normalise the image
-    normalised_image = normalized_data(img)
+    dataGen = ImageDataGenerator(
+        horizontal_flip=True, 
+        vertical_flip=True,
+        rotation_range=90,
+        preprocessing_function=lambda img: normalized_data(img))
+    
+    normalised_image = dataGen.flow(img)
     
     return normalised_image
 
@@ -193,12 +195,12 @@ def predict(img: str
     for i, model in enumerate(models[1:]):
         
         logging.info(f'Sending the image to model - {i + 1}')
-        if i == 1:
-            prediction = model.predict(img_2, verbose=0)
-        elif i == 2:
-            prediction = model.predict(img_3, verbose=0)[0]
-        else:
+        if i in [0, 3]:
             prediction = model.predict(img_1, verbose=0)
+        elif i == 1:
+            prediction = model.predict(img_2, verbose=0)
+        else:
+            prediction = model.predict(img_3, verbose=0)[0]
         predictions.append([prediction])
             
     logging.info('Normalising the predicted classes')
@@ -213,7 +215,7 @@ def predict(img: str
             class_x = (class_x[0] > 0.5).astype(np.uint8)
         max_class = np.argmax(class_x)
         stone_classes.append(max_class)
-    stone_class = np.argmax(stone_classes)
+    stone_class = max(stone_classes)
 
     # Classify Cyst
     cyst_classes = np.argmax(predictions[-1])
@@ -236,9 +238,14 @@ def main(request: func.HttpRequest
             req_body = request.get_json()
             img = req_body.get('img')
             
+            if img == '':
+                raise ValueError
         except ValueError:
+            logging.info('Got an empty body. The process has been terminated.')
+            return func.HttpResponse("Empty body, please make sure that your request is valid!", status_code=404)
+        except Exception:
             logging.info('Got an invalid request. The process has been terminated.')
-            return func.HttpResponse("Invalid request, please make sure that your request is valid!", 400)
+            return func.HttpResponse("Invalid request, please make sure that your request is valid!", status_code=406)
         
         if img:
             try:
