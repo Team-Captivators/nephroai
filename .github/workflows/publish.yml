@@ -1,4 +1,4 @@
-name: Build and deploy Python project to GitHub release - nephroapi
+name: GitHub Release - Nephroapi
 'on':
   push:
     branches:
@@ -7,6 +7,17 @@ name: Build and deploy Python project to GitHub release - nephroapi
 env:
   PYTHON_VERSION: '3.10'
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run Super-Linter
+        uses: github/super-linter@v4
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: '${{ secrets.RELEASE_TOKEN }}'
+      
   build:
     runs-on: ubuntu-latest
     steps:
