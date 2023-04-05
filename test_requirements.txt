@@ -1,5 +1,5 @@
-azure.functions
+azure-functions
 scikit-image
 numpy
-tensorflow-cpu
+tensorflow
 pillow
