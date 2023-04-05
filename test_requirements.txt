@@ -1,0 +1,5 @@
+azure.functions
+scikit-image
+numpy
+tensorflow-cpu
+pillow
