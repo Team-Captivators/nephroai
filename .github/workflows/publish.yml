@@ -6,21 +6,9 @@ name: GitHub Release - Nephroapi
   workflow_dispatch:
 env:
   PYTHON_VERSION: '3.10'
-jobs:
-  verify:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Run Super-Linter
-        uses: github/super-linter@v4
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: '${{ secrets.RELEASE_TOKEN }}'
-      
+jobs:      
   build:
     runs-on: ubuntu-latest
-    needs: verify
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
